@@ -1,4 +1,4 @@
-name: Rust
+name: zero2prod - CI
 
 on:
   push:

@@ -1,9 +1,4 @@
-use axum::{
-    Router,
-    extract::Path,
-    http::StatusCode,
-    routing::get,
-};
+use axum::{Router, extract::Path, http::StatusCode, routing::get};
 
 use std::net::SocketAddr;
 
@@ -14,10 +9,10 @@ const HOST: &str = "0.0.0.0";
 
 // handlers (temp setup)
 pub async fn root(path: Option<Path<String>>) -> String {
-    return match path {
+    match path {
         Some(Path(name)) => format!("Hello, {}!", name),
         None => "Hello, World!".to_string(),
-    };
+    }
 }
 
 pub async fn health_check_handler() -> Result<String, (StatusCode, &'static str)> {

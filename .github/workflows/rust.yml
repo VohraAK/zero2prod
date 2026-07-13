@@ -42,7 +42,7 @@ jobs:
         key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
     - name: Install sqlx-cli
-      uses: taiki-e/install-action@sqlx-cli
+      run: cargo install sqlx-cli --no-default-features --features rustls,postgres
 
     - name: Migrate database
       run: sqlx migrate run

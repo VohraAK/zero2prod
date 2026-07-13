@@ -29,7 +29,7 @@ pub fn run(
         .route("/health_check", get(health_check_handler))
         .route("/subscriptions", post(subscribe_handler));
 
-    println!("Listening to port 3000");
+    println!("Listening to port 3000!");
 
     Ok(axum::serve(listener, app))
 }

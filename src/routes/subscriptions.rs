@@ -16,6 +16,14 @@ pub struct SubscribeFormData {
     pub email: String,
 }
 
+#[tracing::instrument(
+    name = "Adding a new subscriber",
+    skip(form, connection),
+    fields(
+        subscriber_email = %form.email,
+        subscriber_name = %form.name
+    )
+)]
 pub async fn subscribe_handler(
     State(connection): State<PgPool>,
     Form(form): Form<SubscribeFormData>,
@@ -34,7 +42,13 @@ pub async fn subscribe_handler(
     .await;
 
     match result {
-        Ok(_) => StatusCode::OK,
-        Err(_) => StatusCode::INTERNAL_SERVER_ERROR,
+        Ok(_) => {
+            tracing::info!("New subscriber details have been saved");
+            StatusCode::OK
+        }
+        Err(e) => {
+            tracing::error!("Failed to execute query: {:?}", e);
+            StatusCode::INTERNAL_SERVER_ERROR
+        }
     }
 }

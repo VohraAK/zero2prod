@@ -1,4 +1,5 @@
 use reqwest::Client;
+use secrecy::ExposeSecret;
 use sqlx::{Connection, PgConnection, PgPool};
 use std::net::TcpListener;
 use uuid::Uuid;
@@ -10,9 +11,10 @@ pub struct TestApp {
 }
 
 async fn configure_database(config: &DatabaseSettings) -> PgPool {
-    let mut connection = PgConnection::connect(&config.connection_string_without_db())
-        .await
-        .expect("Failed to connect to Postgres!");
+    let mut connection =
+        PgConnection::connect(config.connection_string_without_db().expose_secret())
+            .await
+            .expect("Failed to connect to Postgres!");
 
     let create_db_query = format!(r#"CREATE DATABASE "{}";"#, config.database_name);
     sqlx::query(sqlx::AssertSqlSafe(create_db_query))
@@ -20,7 +22,7 @@ async fn configure_database(config: &DatabaseSettings) -> PgPool {
         .await
         .expect("Failed to create database.");
 
-    let connection_pool = PgPool::connect(&config.connection_string())
+    let connection_pool = PgPool::connect(config.connection_string().expose_secret())
         .await
         .expect("Failed to connect to Postgres.");
 

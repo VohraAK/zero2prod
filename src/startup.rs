@@ -8,6 +8,7 @@ use axum::{
 };
 use sqlx::PgPool;
 use tokio::net::TcpListener;
+use tower_http::trace::TraceLayer;
 
 async fn root(path: Option<Path<String>>) -> impl IntoResponse {
     match path {
@@ -28,7 +29,8 @@ pub fn run(
         .route("/{name}", get(root))
         .route("/health_check", get(health_check_handler))
         .route("/subscriptions", post(subscribe_handler))
-        .with_state(connection);
+        .with_state(connection)
+        .layer(TraceLayer::new_for_http());
 
     Ok(axum::serve(listener, app))
 }

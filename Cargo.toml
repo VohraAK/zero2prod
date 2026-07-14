@@ -11,6 +11,8 @@ reqwest = "0.13.4"
 serde = { version = "1.0.228", features = ["derive"] }
 sqlx = { version = "0.9.0", default-features = false, features = ["postgres", "runtime-tokio", "tls-rustls", "uuid", "chrono", "migrate", "macros"] }
 tokio = {version = "1.52.3", features = ["full", "rt-multi-thread"]}
+uuid = { version = "1", features = ["v4"] }
+chrono = { version = "0.4.22", default-features = false, features = ["clock"] }
 validator = { version = "0.20.0", features = ["derive"] }
 
 [lib]

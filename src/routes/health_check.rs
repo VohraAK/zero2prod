@@ -1,5 +1,5 @@
-use axum::response::IntoResponse;
 use axum::http::StatusCode;
+use axum::response::IntoResponse;
 
 pub async fn health_check_handler() -> impl IntoResponse {
     let health = true;

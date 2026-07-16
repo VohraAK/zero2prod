@@ -1,6 +1,7 @@
 use config::Config;
 use secrecy::{ExposeSecret, SecretString};
 use serde::Deserialize;
+use sqlx::postgres::PgConnectOptions;
 
 pub enum Environment {
     Local,
@@ -53,46 +54,19 @@ pub struct DatabaseSettings {
 }
 
 impl DatabaseSettings {
-    // Cloud SQL Unix socket connections use a host path (e.g. "/cloudsql/project:region:instance")
-    // instead of a host:port pair, so the connection string has to be built differently.
-    pub fn connection_string(&self) -> SecretString {
-        if self.host.starts_with('/') {
-            SecretString::from(format!(
-                "postgres://{}:{}@/{}?host={}",
-                self.username,
-                self.password.expose_secret(),
-                self.database_name,
-                self.host
-            ))
-        } else {
-            SecretString::from(format!(
-                "postgres://{}:{}@{}:{}/{}",
-                self.username,
-                self.password.expose_secret(),
-                self.host,
-                self.port,
-                self.database_name
-            ))
-        }
+    // sqlx treats a `.host()` value starting with "/" as a Unix socket directory
+    // (same convention as libpq) - Cloud SQL's socket connections work through this
+    // without needing any special-casing here.
+    pub fn without_db(&self) -> PgConnectOptions {
+        PgConnectOptions::new()
+            .host(&self.host)
+            .port(self.port)
+            .username(&self.username)
+            .password(self.password.expose_secret())
     }
 
-    pub fn connection_string_without_db(&self) -> SecretString {
-        if self.host.starts_with('/') {
-            SecretString::from(format!(
-                "postgres://{}:{}@/?host={}",
-                self.username,
-                self.password.expose_secret(),
-                self.host
-            ))
-        } else {
-            SecretString::from(format!(
-                "postgres://{}:{}@{}:{}",
-                self.username,
-                self.password.expose_secret(),
-                self.host,
-                self.port
-            ))
-        }
+    pub fn with_db(&self) -> PgConnectOptions {
+        self.without_db().database(&self.database_name)
     }
 }
 

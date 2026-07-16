@@ -53,25 +53,46 @@ pub struct DatabaseSettings {
 }
 
 impl DatabaseSettings {
+    // Cloud SQL Unix socket connections use a host path (e.g. "/cloudsql/project:region:instance")
+    // instead of a host:port pair, so the connection string has to be built differently.
     pub fn connection_string(&self) -> SecretString {
-        SecretString::from(format!(
-            "postgres://{}:{}@{}:{}/{}",
-            self.username,
-            self.password.expose_secret(),
-            self.host,
-            self.port,
-            self.database_name
-        ))
+        if self.host.starts_with('/') {
+            SecretString::from(format!(
+                "postgres://{}:{}@/{}?host={}",
+                self.username,
+                self.password.expose_secret(),
+                self.database_name,
+                self.host
+            ))
+        } else {
+            SecretString::from(format!(
+                "postgres://{}:{}@{}:{}/{}",
+                self.username,
+                self.password.expose_secret(),
+                self.host,
+                self.port,
+                self.database_name
+            ))
+        }
     }
 
     pub fn connection_string_without_db(&self) -> SecretString {
-        SecretString::from(format!(
-            "postgres://{}:{}@{}:{}",
-            self.username,
-            self.password.expose_secret(),
-            self.host,
-            self.port
-        ))
+        if self.host.starts_with('/') {
+            SecretString::from(format!(
+                "postgres://{}:{}@/?host={}",
+                self.username,
+                self.password.expose_secret(),
+                self.host
+            ))
+        } else {
+            SecretString::from(format!(
+                "postgres://{}:{}@{}:{}",
+                self.username,
+                self.password.expose_secret(),
+                self.host,
+                self.port
+            ))
+        }
     }
 }
 

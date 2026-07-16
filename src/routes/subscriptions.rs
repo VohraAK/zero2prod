@@ -28,6 +28,8 @@ pub async fn subscribe_handler(
     State(connection): State<PgPool>,
     Form(form): Form<SubscribeFormData>,
 ) -> impl IntoResponse {
+    tracing::info!("Saving new deets in the db...");
+
     let result = sqlx::query!(
         r#"
         INSERT INTO subscriptions (id, email, name, subscribed_at)

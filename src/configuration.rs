@@ -90,6 +90,11 @@ pub fn get_configuration() -> Result<Settings, config::ConfigError> {
     let settings = Config::builder()
         .add_source(config::File::from(configuration_dir.join("base.yaml")))
         .add_source(config::File::from(configuration_dir.join(env_filename)))
+        .add_source(
+            config::Environment::with_prefix("APP")
+                .prefix_separator("_")
+                .separator("__"),
+        )
         .build()?;
 
     settings.try_deserialize::<Settings>()

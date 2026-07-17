@@ -30,20 +30,7 @@ pub async fn subscribe_handler(
 ) -> impl IntoResponse {
     tracing::info!("Saving new deets in the db...");
 
-    let result = sqlx::query!(
-        r#"
-        INSERT INTO subscriptions (id, email, name, subscribed_at)
-        VALUES ($1, $2, $3, $4)
-        "#,
-        Uuid::new_v4(),
-        form.email,
-        form.name,
-        Utc::now()
-    )
-    .execute(&connection)
-    .await;
-
-    match result {
+    match insert_subscriber(&connection, &form).await {
         Ok(_) => {
             tracing::info!("New subscriber details have been saved");
             StatusCode::OK
@@ -53,4 +40,21 @@ pub async fn subscribe_handler(
             StatusCode::INTERNAL_SERVER_ERROR
         }
     }
+}
+
+pub async fn insert_subscriber(connection: &PgPool, form: &SubscribeFormData) -> Result<(), sqlx::Error>{
+    sqlx::query!(
+        r#"
+        INSERT INTO subscriptions (id, email, name, subscribed_at)
+        VALUES ($1, $2, $3, $4)
+        "#,
+        Uuid::new_v4(),
+        form.email,
+        form.name,
+        Utc::now()
+    )
+    .execute(connection)
+    .await?;
+
+    Ok(())
 }
